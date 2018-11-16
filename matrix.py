@@ -1,57 +1,43 @@
 import random
+from itertools import starmap
+from operator import mul
 
 
 class Matrix:
     def __init__(self, rows, cols):
-        matrix = []
-
         self.rows = rows
         self.cols = cols
-
-        for i in range(rows):
-            matrix.append([])
-            for j in range(cols):
-                matrix[i].append(0)
-
-        self.matrix = matrix
+        self.data = [[0 for _ in range(self.cols)] for _ in range(rows)]
 
     def randomize(self):
-        for i in range(self.rows):
-            for j in range(self.cols):
-                self.matrix[i][j] = round(random.uniform(0, 10))
+        self.data = [[round(random.uniform(0, 10)) for _ in range(self.cols)] for _ in range(self.rows)]
 
-    def add(self, n):
-        if isinstance(n, Matrix):
-            for i in range(self.rows):
-                for j in range(self.cols):
-                    self.matrix[i][j] += n.matrix[i][j]
-
+    def add(self, a):
+        if isinstance(a, Matrix):
+            if self.rows == a.rows and self.cols == a.cols:
+                self.data = [[self.data[d1][d2] + a.data[d1][d2] for d2 in range(self.cols)] for d1 in range(self.cols)]
+            else:
+                raise Exception("Matrices is in different dimension")
         else:
-            for i in range(self.rows):
-                for j in range(self.cols):
-                    self.matrix[i][j] += n
+            raise Exception("Parameter is not a matrix instance")
 
-    def multiply(self, n):
-        if isinstance(n, Matrix):
-            if self.cols != n.rows:
-                raise Exception("Columns of A must match rows of B")
+    def subtract(self, a):
+        if isinstance(a, Matrix):
+            if self.rows == a.rows and self.cols == a.cols:
+                self.data = [[self.data[d1][d2] - a.data[d1][d2] for d2 in range(self.cols)] for d1 in range(self.cols)]
+            else:
+                raise Exception("Matrices is in different dimension")
+        else:
+            raise Exception("Parameter is not a matrix instance")
 
-            result = Matrix(self.rows, n.cols)
-
-            for i in range(result.rows):
-                for j in range(result.cols):
-                    total_sum = 0
-                    for k in self.cols:
-                        total_sum += self.matrix[i][k] * n.matrix[k][j]
-                    result.matrix[i][j] = total_sum
-
-            self.matrix = result.matrix
+    def dot(self, a):
+        if isinstance(a, Matrix):
+            if self.cols == a.rows:
+                self.data = [[sum(starmap(mul, zip(row, col))) for col in zip(*a.data)] for row in self.data]
+            else:
+                return Exception("You cannot multiply these matrix, check the dimension.")
+        else:
+            raise Exception("Parameter is not a matrix instance")
 
     def transpose(self):
-        result = Matrix(self.cols, self.rows)
-
-        for i in range(result.rows):
-            for j in range(result.cols):
-                result.matrix[j][i] = self.matrix[i][j]
-
-        return result
+        self.data = list(zip(*self.data))
